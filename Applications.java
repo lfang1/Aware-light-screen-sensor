@@ -95,9 +95,8 @@ public class Applications extends AccessibilityService {
 
     // Screentext variables
     private String currScreenText = "";
-
-    //invisible text
-    private String invisibleScreenText = "";
+    //Screentext with only visible text
+    private String visibleCurrScreenText = "";
 
     ArrayList<ContentValues> contentBuffer = new ArrayList<ContentValues>();
 
@@ -139,18 +138,17 @@ public class Applications extends AccessibilityService {
             // Format the current time in UTC+11 timezone
             String formattedTime = sdf.format(new Date(currentTimeMillis));
 
-
-            //Check if this node is invisible to user, add it to the invisible screen text
-            if (!mNodeInfo.isVisibleToUser()) {
-                invisibleScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
-            }
-
             //Check for outbound coordinates (i.e., coordinates outside of screen
             //TO DO
 
+            //Check if this node is visible to user and append its text to visibleCurrScreenText
+            if (mNodeInfo.isVisibleToUser()) {
+                visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
+            }
+
+            //append text in curr node to currScreenText
             currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
 
-//            currScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
         }
 
         if (mNodeInfo.getChildCount() < 1) return;
@@ -271,13 +269,8 @@ public class Applications extends AccessibilityService {
 
                 //before removing invisible text
                 Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
-                //After removing invisible text by "@@@"
-                currScreenText = currScreenText.replace(invisibleScreenText, "@@@");
-                Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
-                //Replace "@@@" by ""
-                currScreenText = currScreenText.replace(invisibleScreenText, "");
-                //FIXME: Remember to clean the above 4 lines of code
-
+                //After removing invisible text
+                Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + visibleCurrScreenText);
 
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
@@ -292,7 +285,7 @@ public class Applications extends AccessibilityService {
                 }
 
                 currScreenText = "";
-                invisibleScreenText = "";
+                visibleCurrScreenText = "";
             }
         }
 
