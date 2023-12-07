@@ -97,6 +97,8 @@ public class Applications extends AccessibilityService {
     private String currScreenText = "";
     //Screentext with only visible text
     private String visibleCurrScreenText = "";
+    //Screentext with only invisible text
+    private String invisibleCurrScreenText = "";
 
     ArrayList<ContentValues> contentBuffer = new ArrayList<ContentValues>();
 
@@ -144,6 +146,8 @@ public class Applications extends AccessibilityService {
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
                 visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
+            } else {
+                invisibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||";
             }
 
             //append text in curr node to currScreenText
@@ -267,10 +271,17 @@ public class Applications extends AccessibilityService {
                 // Format the current time in UTC+11 timezone
                 String formattedTime = sdf.format(new Date(currentTimeMillis));
 
-                //before removing invisible text
-                Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
-                //After removing invisible text
-                Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + visibleCurrScreenText);
+                //Print just both visible and invisible text
+                //Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
+                //Check if invisible text is found
+                if (!invisibleCurrScreenText.isEmpty()) {
+                    //Print only visible text in info
+                    Log.i(TAG,"VISIBLE-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + visibleCurrScreenText);
+                    //Print only invisible text in Debug
+                    Log.d(TAG,"INVISIBLE-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + invisibleCurrScreenText);
+                    //Print both text in verbose
+                    //Log.v(TAG,"CURR-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + currScreenText);
+                }
 
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
@@ -286,6 +297,7 @@ public class Applications extends AccessibilityService {
 
                 currScreenText = "";
                 visibleCurrScreenText = "";
+                invisibleCurrScreenText = "";
             }
         }
 
