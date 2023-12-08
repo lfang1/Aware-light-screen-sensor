@@ -18,7 +18,9 @@ import android.database.sqlite.SQLiteException;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -100,6 +102,9 @@ public class Applications extends AccessibilityService {
     //Screentext with only invisible text
     private String invisibleCurrScreenText = "";
 
+    //A variable to store all pane titles in Node
+    private String screenPaneTitles = "";
+
     ArrayList<ContentValues> contentBuffer = new ArrayList<ContentValues>();
 
     ArrayList<Integer> textBuffer = new ArrayList<Integer>();
@@ -129,9 +134,15 @@ public class Applications extends AccessibilityService {
 
         // conditions to filter the meaningless input
         if (mNodeInfo.getText() != null && !mNodeInfo.getText().toString().equals("")){
+            //A Rect instance to hold Screen coordinates
             Rect rect = new Rect();
-
             mNodeInfo.getBoundsInScreen(rect);
+
+            //FIXME: getBoundsInWindow only works with API 34, but some files require API30 or below
+
+            // A Rect instance to hold Window coordinates
+            //Rect winRect = new Rect();
+            //mNodeInfo.getBoundsInWindow(winRect);
 
             //Time of the log
             long currentTimeMillis = System.currentTimeMillis();
@@ -140,14 +151,35 @@ public class Applications extends AccessibilityService {
             // Format the current time in UTC+11 timezone
             String formattedTime = sdf.format(new Date(currentTimeMillis));
 
+            //Get screen dimensions
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            int screenWidth = displayMetrics.widthPixels;
+            int screenHeight = displayMetrics.heightPixels;
+            Log.v(TAG,"SCREENSIZE (Time: " + formattedTime + "): \n" + "Width: " + screenWidth + ", Height: " + screenHeight);
+
             //Check for outbound coordinates (i.e., coordinates outside of screen
-            //TO DO
 
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
                 visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
+
+                if(rect.left<0 || rect.right>screenWidth) {
+                    Log.d(TAG,"WIDTH-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                } else if (rect.top<0 || rect.bottom > screenHeight) {
+                    Log.d(TAG,"HEIGHT-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                }
             } else {
                 invisibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||";
+
+                if(rect.left<0 || rect.right>screenWidth) {
+                    Log.v(TAG,"WIDTH-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                } else if (rect.top<0 || rect.bottom > screenHeight) {
+                    Log.v(TAG,"HEIGHT-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                } else {
+                    Log.v(TAG,"UNKNOWN-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                }
             }
 
             //append text in curr node to currScreenText
@@ -262,7 +294,7 @@ public class Applications extends AccessibilityService {
                 screenText.put(ScreenText_Provider.ScreenTextData.USER_ACTION, event.getAction());
                 screenText.put(ScreenText_Provider.ScreenTextData.EVENT_TYPE, event.getEventType());
 
-                //Remove invisible text
+                //Time of the log
                 long currentTimeMillis = System.currentTimeMillis();
 
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -270,6 +302,10 @@ public class Applications extends AccessibilityService {
 
                 // Format the current time in UTC+11 timezone
                 String formattedTime = sdf.format(new Date(currentTimeMillis));
+
+                //Print paneTitles in verbose
+                Log.v(TAG,"PANETITLE-DEMO (Time: " + formattedTime + "): \n" + screenPaneTitles);
+                screenPaneTitles = "";
 
                 //Print just both visible and invisible text
                 //Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
