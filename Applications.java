@@ -155,30 +155,26 @@ public class Applications extends AccessibilityService {
             DisplayMetrics displayMetrics = new DisplayMetrics();
             WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            int screenWidth = displayMetrics.widthPixels;
-            int screenHeight = displayMetrics.heightPixels;
+            //FIXME: need to get actual size
+            //int screenWidth = displayMetrics.widthPixels;
+            //int screenHeight = displayMetrics.heightPixels;
+            int screenWidth = 1080;
+            int screenHeight = 2400;
             Log.v(TAG,"SCREENSIZE (Time: " + formattedTime + "): \n" + "Width: " + screenWidth + ", Height: " + screenHeight);
+
+
 
             //Check for outbound coordinates (i.e., coordinates outside of screen
 
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
                 visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
-
-                if(rect.left<0 || rect.right>screenWidth) {
-                    Log.d(TAG,"WIDTH-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
-                } else if (rect.top<0 || rect.bottom > screenHeight) {
-                    Log.d(TAG,"HEIGHT-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
-                }
             } else {
                 invisibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||";
-
-                if(rect.left<0 || rect.right>screenWidth) {
-                    Log.v(TAG,"WIDTH-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
-                } else if (rect.top<0 || rect.bottom > screenHeight) {
-                    Log.v(TAG,"HEIGHT-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                if(rect.left<0 || rect.right>screenWidth || rect.top<0 || rect.bottom > screenHeight) {
+                    Log.d(TAG,"OUTBOUND-INVITEXT: \n" + mNodeInfo.getText() + "***" + rect.toString());
                 } else {
-                    Log.v(TAG,"UNKNOWN-OUTBOUNDTEXTDETECTED: \n" + mNodeInfo.getText() + "***" + rect.toString());
+                    Log.w(TAG,"UNKNOWN-INVITEXT: \n" + mNodeInfo.getText() + "***" + rect.toString());
                 }
             }
 
