@@ -152,25 +152,25 @@ public class Applications extends AccessibilityService {
             String formattedTime = sdf.format(new Date(currentTimeMillis));
 
             //Get screen dimensions
-            DisplayMetrics displayMetrics = new DisplayMetrics();
-            WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            //FIXME: need to get actual size
+            //DisplayMetrics displayMetrics = new DisplayMetrics();
+            //WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            //windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            //the navigation bar and menu bar is not included, so it is smaller than the actual size
             //int screenWidth = displayMetrics.widthPixels;
             //int screenHeight = displayMetrics.heightPixels;
+            //Log.v(TAG,"SCREENSIZE (Time: " + formattedTime + "): \n" + "Width: " + screenWidth + ", Height: " + screenHeight);
             int screenWidth = 1080;
             int screenHeight = 2400;
-            Log.v(TAG,"SCREENSIZE (Time: " + formattedTime + "): \n" + "Width: " + screenWidth + ", Height: " + screenHeight);
 
-
-
-            //Check for outbound coordinates (i.e., coordinates outside of screen
+            //test info
+            Log.v(TAG,"testinfo:\n" + mNodeInfo.getText() + "***" + mNodeInfo.getTextSelectionStart() + "***" + mNodeInfo.getTextSelectionEnd());
 
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
                 visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
             } else {
                 invisibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||";
+                //Check for outbound coordinates (i.e., coordinates outside of screen
                 if(rect.left<0 || rect.right>screenWidth || rect.top<0 || rect.bottom > screenHeight) {
                     Log.d(TAG,"OUTBOUND-INVITEXT: \n" + mNodeInfo.getText() + "***" + rect.toString());
                 } else {
@@ -298,10 +298,6 @@ public class Applications extends AccessibilityService {
 
                 // Format the current time in UTC+11 timezone
                 String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                //Print paneTitles in verbose
-                Log.v(TAG,"PANETITLE-DEMO (Time: " + formattedTime + "): \n" + screenPaneTitles);
-                screenPaneTitles = "";
 
                 //Print just both visible and invisible text
                 //Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
