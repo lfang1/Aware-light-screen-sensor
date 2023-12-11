@@ -163,7 +163,17 @@ public class Applications extends AccessibilityService {
             int screenHeight = 2400;
 
             //test info
-            Log.v(TAG,"testinfo:\n" + mNodeInfo.getText() + "***" + mNodeInfo.getTextSelectionStart() + "***" + mNodeInfo.getTextSelectionEnd());
+            //Log.v(TAG,"testinfo:\n" + mNodeInfo.getText() + "***" + mNodeInfo.getTextSelectionStart() + "***" + mNodeInfo.getTextSelectionEnd());
+
+            //check if Rect with negative coordinates is visible
+            if (rect.left < 0 || rect.top < 0 || rect.right < 0 || rect.bottom < 0) {
+                if(mNodeInfo.isVisibleToUser()) {
+                    Log.d(TAG, "NEGATIVE-COOR-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
+                } else {
+                    Log.v(TAG, "NEGATIVE-COOR-INVISIBLE\n" + mNodeInfo.getText() + "***" + rect.toString());
+                }
+            }
+
 
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
@@ -300,7 +310,7 @@ public class Applications extends AccessibilityService {
                 String formattedTime = sdf.format(new Date(currentTimeMillis));
 
                 //Print just both visible and invisible text
-                //Log.d(TAG,"SCREENTEXT-DEMO (Time: " + formattedTime + "): " + currScreenText);
+                //Log.d(TAG,"CURR-SCREENTEXT-DEMO:\n" + currScreenText);
                 //Check if invisible text is found
                 if (!invisibleCurrScreenText.isEmpty()) {
                     //Print only visible text in info
