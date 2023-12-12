@@ -99,8 +99,6 @@ public class Applications extends AccessibilityService {
     private String currScreenText = "";
     //Screentext with only visible text
     private String visibleCurrScreenText = "";
-    //Screentext with only invisible text
-    private String invisibleCurrScreenText = "";
 
     //A variable to store all pane titles in Node
     private String screenPaneTitles = "";
@@ -144,13 +142,6 @@ public class Applications extends AccessibilityService {
             //Rect winRect = new Rect();
             //mNodeInfo.getBoundsInWindow(winRect);
 
-            //Time of the log
-            long currentTimeMillis = System.currentTimeMillis();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-            // Format the current time in UTC+11 timezone
-            String formattedTime = sdf.format(new Date(currentTimeMillis));
-
             //Get screen dimensions
             //DisplayMetrics displayMetrics = new DisplayMetrics();
             //WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -174,22 +165,14 @@ public class Applications extends AccessibilityService {
                 }
             }
 
-
             //Check if this node is visible to user and append its text to visibleCurrScreenText
             if (mNodeInfo.isVisibleToUser()) {
-                visibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
-            } else {
-                invisibleCurrScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||";
-                //Check for outbound coordinates (i.e., coordinates outside of screen
-                if(rect.left<0 || rect.right>screenWidth || rect.top<0 || rect.bottom > screenHeight) {
-                    Log.d(TAG,"OUTBOUND-INVITEXT: \n" + mNodeInfo.getText() + "***" + rect.toString());
-                } else {
-                    Log.w(TAG,"UNKNOWN-INVITEXT: \n" + mNodeInfo.getText() + "***" + rect.toString());
-                }
+                visibleCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
             }
 
             //append text in curr node to currScreenText
-            currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
+            currScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
+            //currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
 
         }
 
@@ -310,16 +293,7 @@ public class Applications extends AccessibilityService {
                 String formattedTime = sdf.format(new Date(currentTimeMillis));
 
                 //Print just both visible and invisible text
-                //Log.d(TAG,"CURR-SCREENTEXT-DEMO:\n" + currScreenText);
-                //Check if invisible text is found
-                if (!invisibleCurrScreenText.isEmpty()) {
-                    //Print only visible text in info
-                    Log.i(TAG,"VISIBLE-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + visibleCurrScreenText);
-                    //Print only invisible text in Debug
-                    Log.d(TAG,"INVISIBLE-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + invisibleCurrScreenText);
-                    //Print both text in verbose
-                    //Log.v(TAG,"CURR-SCREENTEXT-DEMO (Time: " + formattedTime + "): \n" + currScreenText);
-                }
+                Log.d(TAG,"SCREENTEXT-DEMO:\n" + currScreenText);
 
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
@@ -335,7 +309,6 @@ public class Applications extends AccessibilityService {
 
                 currScreenText = "";
                 visibleCurrScreenText = "";
-                invisibleCurrScreenText = "";
             }
         }
 
