@@ -155,10 +155,7 @@ public class Applications extends AccessibilityService {
             if (rect.left < rect.right && rect.top < rect.bottom) {
                 //check if a node is visible to user
                 if (mNodeInfo.isVisibleToUser()) {
-                    //append visible text, including partially visible text
-                    //visibleCurrScreenText += mNodeInfo.getText() + "||";
-
-                    //check if a rect has are partially visible
+                    //check if a node is partially visible
                     if (rect.left < 0 || rect.right > screenWidth || rect.top < 0 ||
                             rect.bottom > screenHeight) {
                         //Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
