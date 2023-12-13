@@ -100,6 +100,9 @@ public class Applications extends AccessibilityService {
     //Screentext with only visible text
     private String visibleCurrScreenText = "";
 
+    //Screentext with only transformed ScreenText text
+    private String transformedCurrScreenText = "";
+
     //A variable to store all pane titles in Node
     private String screenPaneTitles = "";
 
@@ -142,32 +145,34 @@ public class Applications extends AccessibilityService {
             //Rect winRect = new Rect();
             //mNodeInfo.getBoundsInWindow(winRect);
 
+            //FIXME: the navigation bar and menu bar is not included, so it is smaller than the actual size
+            // WindowMetrics.getBounds() in API30 could include these areas
+
             //Get screen dimensions
-            //DisplayMetrics displayMetrics = new DisplayMetrics();
-            //WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            //windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            //the navigation bar and menu bar is not included, so it is smaller than the actual size
-            //int screenWidth = displayMetrics.widthPixels;
-            //int screenHeight = displayMetrics.heightPixels;
-            //Log.v(TAG,"SCREENSIZE (Time: " + formattedTime + "): \n" + "Width: " + screenWidth + ", Height: " + screenHeight);
-            int screenWidth = 1080;
-            int screenHeight = 2400;
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            int screenWidth = displayMetrics.widthPixels; //pixel 8 1080*2400
+            int screenHeight = displayMetrics.heightPixels;
+            Log.v(TAG,"SCREENSIZE:\n" + "Width: " + screenWidth + ", Height: " + screenHeight);
 
             //test info
             //Log.v(TAG,"testinfo:\n" + mNodeInfo.getText() + "***" + mNodeInfo.getTextSelectionStart() + "***" + mNodeInfo.getTextSelectionEnd());
 
-            //check if Rect with negative coordinates is visible
-            if (rect.left < 0 || rect.top < 0 || rect.right < 0 || rect.bottom < 0) {
-                if(mNodeInfo.isVisibleToUser()) {
-                    Log.d(TAG, "NEGATIVE-COOR-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
-                } else {
-                    Log.v(TAG, "NEGATIVE-COOR-INVISIBLE\n" + mNodeInfo.getText() + "***" + rect.toString());
+            //check if a node is not transformed
+            if (rect.left < rect.right && rect.top < rect.bottom) {
+                //check if a node is visible to user
+                if (mNodeInfo.isVisibleToUser()) {
+                    visibleCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
+                    //check if a rect has negative coordinate
+                    if (rect.left < 0 || rect.top < 0 || rect.right < 0 || rect.bottom < 0) {
+                        Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
+                        //check if a node is in display bound (excluding areas such as navigation and menu bar that always on display)
+                        //if(rect.right < screenWidth || rect.bottom < screenHeight) {}
+                    }
                 }
-            }
-
-            //Check if this node is visible to user and append its text to visibleCurrScreenText
-            if (mNodeInfo.isVisibleToUser()) {
-                visibleCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
+            } else {
+                transformedCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
             }
 
             //append text in curr node to currScreenText
@@ -294,6 +299,8 @@ public class Applications extends AccessibilityService {
 
                 //Print just both visible and invisible text
                 Log.d(TAG,"SCREENTEXT-DEMO:\n" + currScreenText);
+                Log.v(TAG,"CLEAN-SCREENTEXT-DEMO:\n" + visibleCurrScreenText);
+                Log.i(TAG,"TRANSFORMED-SCREENTEXT-DEMO:\n" + transformedCurrScreenText);
 
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
@@ -309,6 +316,7 @@ public class Applications extends AccessibilityService {
 
                 currScreenText = "";
                 visibleCurrScreenText = "";
+                transformedCurrScreenText = "";
             }
         }
 
