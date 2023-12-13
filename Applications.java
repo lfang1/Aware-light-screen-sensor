@@ -97,14 +97,6 @@ public class Applications extends AccessibilityService {
 
     // Screentext variables
     private String currScreenText = "";
-    //Screentext with only visible text
-    private String visibleCurrScreenText = "";
-
-    //Screentext with only transformed ScreenText text
-    private String transformedCurrScreenText = "";
-
-    //A variable to store all pane titles in Node
-    private String screenPaneTitles = "";
 
     ArrayList<ContentValues> contentBuffer = new ArrayList<ContentValues>();
 
@@ -152,8 +144,8 @@ public class Applications extends AccessibilityService {
             DisplayMetrics displayMetrics = new DisplayMetrics();
             WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            int screenWidth = displayMetrics.widthPixels; //pixel 8 1080*2400
-            int screenHeight = displayMetrics.heightPixels;
+            int screenWidth = displayMetrics.widthPixels; //pixel 7,8 expected: 1080 actual: 1080
+            int screenHeight = 2400;//displayMetrics.heightPixels; //pixel 7,8 expected: 2400 actual: 2138
             Log.v(TAG,"SCREENSIZE:\n" + "Width: " + screenWidth + ", Height: " + screenHeight);
 
             //test info
@@ -163,20 +155,28 @@ public class Applications extends AccessibilityService {
             if (rect.left < rect.right && rect.top < rect.bottom) {
                 //check if a node is visible to user
                 if (mNodeInfo.isVisibleToUser()) {
-                    visibleCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
-                    //check if a rect has negative coordinate
-                    if (rect.left < 0 || rect.top < 0 || rect.right < 0 || rect.bottom < 0) {
-                        Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
+                    //append visible text, including partially visible text
+                    //visibleCurrScreenText += mNodeInfo.getText() + "||";
+
+                    //check if a rect has are partially visible
+                    if (rect.left < 0 || rect.right > screenWidth || rect.top < 0 ||
+                            rect.bottom > screenHeight) {
+                        //Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
                         //check if a node is in display bound (excluding areas such as navigation and menu bar that always on display)
                         //if(rect.right < screenWidth || rect.bottom < screenHeight) {}
+                    } else {
+                        //Log.v(TAG, "FULLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
+                        currScreenText += mNodeInfo.getText() + "||";
                     }
                 }
-            } else {
-                transformedCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
-            }
+            } //transformed text
+//             else {
+//                transformedCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
+//                //Log.v(TAG, "TRANSFORMED-NODE:\n" + mNodeInfo.getText() + "***" + rect.toString());
+//            }
 
-            //append text in curr node to currScreenText
-            currScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
+            //append text in curr node to currScreenText regardless of visibility of the node
+            //currScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
             //currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
 
         }
@@ -299,8 +299,6 @@ public class Applications extends AccessibilityService {
 
                 //Print just both visible and invisible text
                 Log.d(TAG,"SCREENTEXT-DEMO:\n" + currScreenText);
-                Log.v(TAG,"CLEAN-SCREENTEXT-DEMO:\n" + visibleCurrScreenText);
-                Log.i(TAG,"TRANSFORMED-SCREENTEXT-DEMO:\n" + transformedCurrScreenText);
 
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
@@ -315,8 +313,6 @@ public class Applications extends AccessibilityService {
                 }
 
                 currScreenText = "";
-                visibleCurrScreenText = "";
-                transformedCurrScreenText = "";
             }
         }
 
