@@ -162,8 +162,6 @@ public class Applications extends AccessibilityService {
                     if (rect.left < 0 || rect.right > screenWidth || rect.top < 0 ||
                             rect.bottom > screenHeight) {
                         //Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
-                        //check if a node is in display bound (excluding areas such as navigation and menu bar that always on display)
-                        //if(rect.right < screenWidth || rect.bottom < screenHeight) {}
                     } else {
                         //Log.v(TAG, "FULLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
                         currScreenText += mNodeInfo.getText() + "||";
