@@ -132,18 +132,22 @@ public class Applications extends AccessibilityService {
             DisplayMetrics displayMetrics = new DisplayMetrics();
             WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-            int screenWidth = displayMetrics.widthPixels; //pixel 7,8 expected: 1080 actual: 1080
-            int screenHeight = 2400;//displayMetrics.heightPixels; //pixel 7,8 expected: 2400 actual: 2138
+            int screenWidth = displayMetrics.widthPixels; //For Google pixel 7,8 expected: 1080 actual: 1080
+            //NOTE: heightPixels exclude areas that always display system info (e.g., navigation bar)
+            // Need to try AccessibilityNodeInfo.getBoundsInWindow (API34) or WindowMetrics.getBounds (API30) for actual size
+            int screenHeight = 2400;//displayMetrics.heightPixels; //For Google pixel 7,8 expected: 2400 actual: 2138
             Log.v(TAG,"SCREENSIZE:\n" + "Width: " + screenWidth + ", Height: " + screenHeight);
 
-            //check if a node is not transformed
+            //check if a node is not transformed (i.e., left and right / top and bottom coordinates are not flipped over.
             if (rect.left < rect.right && rect.top < rect.bottom) {
                 //check if a node is visible to user
                 if (mNodeInfo.isVisibleToUser()) {
                     //check if a node is partially visible
                     if (rect.left < 0 || rect.right > screenWidth || rect.top < 0 ||
                             rect.bottom > screenHeight) {
-                    } else { //only append text from fully visible node
+                        //ignore text from partillay visible nodes
+                    } else {
+                        //Only collect text from fully visible nodes
                         currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
                     }
                 }
