@@ -45,9 +45,6 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 import android.graphics.Rect;
 
 /**
@@ -127,18 +124,9 @@ public class Applications extends AccessibilityService {
 
         // conditions to filter the meaningless input
         if (mNodeInfo.getText() != null && !mNodeInfo.getText().toString().equals("")){
-            //A Rect instance to hold Screen coordinates
             Rect rect = new Rect();
+
             mNodeInfo.getBoundsInScreen(rect);
-
-            //FIXME: getBoundsInWindow only works with API 34, but some files require API30 or below
-
-            // A Rect instance to hold Window coordinates
-            //Rect winRect = new Rect();
-            //mNodeInfo.getBoundsInWindow(winRect);
-
-            //FIXME: the navigation bar and menu bar is not included, so it is smaller than the actual size
-            // WindowMetrics.getBounds() in API30 could include these areas
 
             //Get screen dimensions
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -148,9 +136,6 @@ public class Applications extends AccessibilityService {
             int screenHeight = 2400;//displayMetrics.heightPixels; //pixel 7,8 expected: 2400 actual: 2138
             Log.v(TAG,"SCREENSIZE:\n" + "Width: " + screenWidth + ", Height: " + screenHeight);
 
-            //test info
-            //Log.v(TAG,"testinfo:\n" + mNodeInfo.getText() + "***" + mNodeInfo.getTextSelectionStart() + "***" + mNodeInfo.getTextSelectionEnd());
-
             //check if a node is not transformed
             if (rect.left < rect.right && rect.top < rect.bottom) {
                 //check if a node is visible to user
@@ -158,22 +143,11 @@ public class Applications extends AccessibilityService {
                     //check if a node is partially visible
                     if (rect.left < 0 || rect.right > screenWidth || rect.top < 0 ||
                             rect.bottom > screenHeight) {
-                        //Log.v(TAG, "PARTIALLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
-                    } else {
-                        //Log.v(TAG, "FULLY-VISIBLE:\n" + mNodeInfo.getText() + "***" + rect.toString());
-                        currScreenText += mNodeInfo.getText() + "||";
+                    } else { //only append text from fully visible node
+                        currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
                     }
                 }
-            } //transformed text
-//             else {
-//                transformedCurrScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
-//                //Log.v(TAG, "TRANSFORMED-NODE:\n" + mNodeInfo.getText() + "***" + rect.toString());
-//            }
-
-            //append text in curr node to currScreenText regardless of visibility of the node
-            //currScreenText += mNodeInfo.getText() + "||"; // Add division sign for the tree
-            //currScreenText += mNodeInfo.getText() + "***" + rect.toString() + "||"; // Add division sign for the tree
-
+            }
         }
 
         if (mNodeInfo.getChildCount() < 1) return;
@@ -282,19 +256,6 @@ public class Applications extends AccessibilityService {
 
                 screenText.put(ScreenText_Provider.ScreenTextData.USER_ACTION, event.getAction());
                 screenText.put(ScreenText_Provider.ScreenTextData.EVENT_TYPE, event.getEventType());
-
-                //Time of the log
-                long currentTimeMillis = System.currentTimeMillis();
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                // Format the current time in UTC+11 timezone
-                String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                //Print just both visible and invisible text
-                Log.d(TAG,"SCREENTEXT-DEMO:\n" + currScreenText);
-
                 screenText.put(ScreenText_Provider.ScreenTextData.TEXT, currScreenText);
 
                 int hashedText = currScreenText.hashCode();
@@ -308,6 +269,7 @@ public class Applications extends AccessibilityService {
                 }
 
                 currScreenText = "";
+
             }
         }
 
@@ -387,15 +349,7 @@ public class Applications extends AccessibilityService {
                 rowData.put(Applications_Foreground.APPLICATION_NAME, appName);
                 rowData.put(Applications_Foreground.IS_SYSTEM_APP, pkgInfo != null && isSystemPackage(pkgInfo));
 
-                long currentTimeMillis = System.currentTimeMillis();
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                // Format the current time in UTC+11 timezone
-                String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                if (DEBUG) Log.d(TAG,"APPLICATION-DEMO (Time: " + formattedTime + "): " + appName);
+                if (DEBUG) Log.d(TAG, "FOREGROUND: " + rowData.toString());
 
                 try {
                     getContentResolver().insert(Applications_Foreground.CONTENT_URI, rowData);
@@ -484,15 +438,7 @@ public class Applications extends AccessibilityService {
 
             getContentResolver().insert(Keyboard_Provider.Keyboard_Data.CONTENT_URI, keyboard);
 
-            long currentTimeMillis = System.currentTimeMillis();
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-            // Format the current time in UTC+11 timezone
-            String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-            if (DEBUG) Log.d(TAG,"KEYBOARD-DEMO (Time: " + formattedTime + "): " + event.getText().toString());
+            if (DEBUG) Log.d(TAG, "Keyboard: " + keyboard.toString());
 
             Intent keyboard_data = new Intent(Keyboard.ACTION_AWARE_KEYBOARD);
             sendBroadcast(keyboard_data);
@@ -518,15 +464,7 @@ public class Applications extends AccessibilityService {
 
                         getContentResolver().insert(Screen_Provider.Screen_Touch.CONTENT_URI, touch);
 
-                        long currentTimeMillis = System.currentTimeMillis();
-
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                        // Format the current time in UTC+11 timezone
-                        String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                        if (DEBUG) Log.d(TAG,"TOUCH-DEMO (Time: " + formattedTime + "): Scrolled Up");
+                        if (DEBUG) Log.d(TAG, "Touch: " + touch.toString());
 
                         Intent touch_data = new Intent(Screen.ACTION_AWARE_TOUCH_SCROLLED_UP);
                         sendBroadcast(touch_data);
@@ -546,15 +484,7 @@ public class Applications extends AccessibilityService {
 
                         getContentResolver().insert(Screen_Provider.Screen_Touch.CONTENT_URI, touch);
 
-                        long currentTimeMillis = System.currentTimeMillis();
-
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                        // Format the current time in UTC+11 timezone
-                        String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                        if (DEBUG) Log.d(TAG,"TOUCH-DEMO (Time: " + formattedTime + "): Scrolled Down");
+                        if (DEBUG) Log.d(TAG, "Touch: " + touch.toString());
 
                         Intent touch_data = new Intent(Screen.ACTION_AWARE_TOUCH_SCROLLED_DOWN);
                         sendBroadcast(touch_data);
@@ -582,15 +512,7 @@ public class Applications extends AccessibilityService {
 
                 getContentResolver().insert(Screen_Provider.Screen_Touch.CONTENT_URI, touch);
 
-                long currentTimeMillis = System.currentTimeMillis();
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                // Format the current time in UTC+11 timezone
-                String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                if (DEBUG) Log.d(TAG,"TOUCH-DEMO (Time: " + formattedTime + "): Clicked");
+                if (DEBUG) Log.d(TAG, "Touch: " + touch.toString());
 
                 Intent touch_data = new Intent(Screen.ACTION_AWARE_TOUCH_CLICKED);
                 sendBroadcast(touch_data);
@@ -614,15 +536,7 @@ public class Applications extends AccessibilityService {
 
                 getContentResolver().insert(Screen_Provider.Screen_Touch.CONTENT_URI, touch);
 
-                long currentTimeMillis = System.currentTimeMillis();
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                sdf.setTimeZone(TimeZone.getTimeZone("GMT+11"));
-
-                // Format the current time in UTC+11 timezone
-                String formattedTime = sdf.format(new Date(currentTimeMillis));
-
-                if (DEBUG) Log.d(TAG,"TOUCH-DEMO (Time: " + formattedTime + "): Long Clicked");
+                if (DEBUG) Log.d(TAG, "Touch: " + touch.toString());
 
                 Intent touch_data = new Intent(Screen.ACTION_AWARE_TOUCH_LONG_CLICKED);
                 sendBroadcast(touch_data);
